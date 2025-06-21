@@ -1,0 +1,42 @@
+name: Post One Paris Texas Frame
+
+on:
+  schedule:
+    - cron: '0 13 * * 2-6'  # At 13:00 UTC Tuesday–Saturday
+  workflow_dispatch:
+
+jobs:
+  post_frame:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install tweepy pandas
+
+      - name: Post frame to Twitter
+        run: python bot.py
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          API_SECRET: ${{ secrets.API_SECRET }}
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          ACCESS_SECRET: ${{ secrets.ACCESS_SECRET }}
+
+- name: Commit updated progress
+  run: |
+    git config user.name "github-actions[bot]"
+    git config user.email "github-actions[bot]@users.noreply.github.com"
+    git add progress.txt
+    git rm ParisFrames/*.jpg --ignore-unmatch
+    git commit -m "Post frame" || echo "No changes to commit"
+    git push origin HEAD:main
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
